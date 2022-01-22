@@ -1,34 +1,50 @@
 package model
 
 import (
-	"github.com/silenceper/wechat/v2"
-	"github.com/silenceper/wechat/v2/cache"
+	"fmt"
+	"github.com/go-redis/redis/v8"
+	dbLib "github.com/lyj0309/jwc-lib/db"
+	esLib "github.com/lyj0309/jwc-lib/elastic"
+	wxLib "github.com/lyj0309/jwc-lib/wx"
+	"github.com/olivere/elastic/v7"
 	"github.com/silenceper/wechat/v2/miniprogram"
-	miniConfig "github.com/silenceper/wechat/v2/miniprogram/config"
-	"github.com/sirupsen/logrus"
-	"os"
+	"github.com/silenceper/wechat/v2/officialaccount"
+	"gorm.io/gorm"
 	"time"
 )
 
 var (
-	Mini *miniprogram.MiniProgram
+	Mini     *miniprogram.MiniProgram
+	Official *officialaccount.OfficialAccount
+	EsClient *elastic.Client
+	rdb      *redis.Client
+	db       *gorm.DB
 )
 
-func Init() {
-	time.Local = time.FixedZone("CST", 8*3600) // 东八
-	logrus.Info("设置时区", time.Now())
+//Donate 表结构
+type Donate struct {
+	ID         string
+	Amount     int    `json:"amount"`
+	Code       string `json:"code" gorm:"-"` //忽略此字段
+	Note       string `json:"note"`
+	CreateTime time.Time
+	PayTime    time.Time
+	User       string //openid
+}
 
-	wc := wechat.NewWechat()
+func init() {
+	EsClient = esLib.NewElastic()
+	rdb = dbLib.NewRedis()
+	db = dbLib.NewDB()
 
-	AppID := os.Getenv("AppID")
-	AppSecret := os.Getenv("AppSecret")
-	if AppID == "" || AppSecret == "" {
-		logrus.Fatal("请设置AppID和AppSecret")
+	fmt.Println("新建表")
+	err := db.AutoMigrate(Donate{})
+	if err != nil {
+		fmt.Println(err)
+		return
 	}
+	//esLib.InsertCsv(EsClient)
 
-	Mini = wc.GetMiniProgram(&miniConfig.Config{
-		AppID:     AppID,
-		AppSecret: AppSecret,
-		Cache:     cache.NewMemory(),
-	})
+	Mini = wxLib.NewWxMini()
+	Official = wxLib.NewOfficial()
 }
