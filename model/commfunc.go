@@ -14,11 +14,28 @@ import (
 var ctx = context.Background()
 
 type KefuMessage struct {
-	ID      int
-	Message string
-	Time    time.Time
-	UserId  string
-	Type    string //平台，公众号还是小程序
+	ID       int
+	Message  string
+	Time     *time.Time
+	To       ToType //谁发谁，1是客服发我，2是我发客服
+	UserId   string
+	Platform string //平台，公众号还是小程序
+}
+
+type ToType int
+type PlatformType string
+
+const (
+	ToTypeMe             = 1
+	ToTypeBack           = 2
+	PlatformTypeMini     = "mini"
+	PlatformTypeOfficial = "official"
+)
+
+func (m KefuMessage) storage() {
+	t := time.Now()
+	m.Time = &t
+	db.Create(&m)
 }
 
 func parseN(s string) string {

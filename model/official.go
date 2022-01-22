@@ -24,13 +24,25 @@ func WxOfficial(c *gin.Context) {
 	server.SetMessageHandler(func(msg *message.MixMessage) (resp *message.Reply) {
 		resp = &message.Reply{}
 
+		storageMessage := func(m string, toType ToType) {
+			KefuMessage{
+				Message:  m,
+				To:       toType,
+				UserId:   string(msg.FromUserName),
+				Platform: PlatformTypeOfficial,
+			}.storage()
+		}
+
 		sendText := func(t string) {
+			storageMessage(t, ToTypeBack)
 			resp.MsgType = message.MsgTypeText
 			resp.MsgData = message.NewText(parseN(t))
 		}
 
 		switch msg.MsgType {
 		case message.MsgTypeText:
+			storageMessage(msg.Content, ToTypeMe)
+
 			//resp.MsgData = message.NewText(msg.Content)
 			if strings.Contains("人工", msg.Content) {
 				sendText("联系人工客服请前往小程序-设置-联系客服，回复“人工”即可")
@@ -55,6 +67,7 @@ func WxOfficial(c *gin.Context) {
 				guess := geneGuess(ans)
 
 				storageQuestion(ans, string(msg.FromUserName))
+				storageMessage(guess, ToTypeBack)
 
 				sendChan <- sendChanT{
 					UserId:  string(msg.FromUserName),

@@ -13,45 +13,59 @@ import (
 
 func Kefu(c *gin.Context) {
 
-	var postForm WxPostForm
-	err := c.ShouldBindJSON(&postForm)
+	var msg WxPostForm
+	err := c.ShouldBindJSON(&msg)
 	if err != nil {
 		logrus.Error(err)
 		return
 	}
 
 	sendText := func(text string) {
-		m := message.NewCustomerTextMessage(postForm.FromUserName, text)
+		KefuMessage{
+			Message:  text,
+			To:       ToTypeBack,
+			UserId:   msg.FromUserName,
+			Platform: PlatformTypeMini,
+		}.storage()
+
+		m := message.NewCustomerTextMessage(msg.FromUserName, text)
 		err = Mini.GetCustomerMessage().Send(m)
 		if err != nil {
 			logrus.Error(err)
 		}
 	}
 
-	switch postForm.MsgType {
+	switch msg.MsgType {
 	case "event":
-		if postForm.Event == "user_enter_tempsession" {
+		if msg.Event == "user_enter_tempsession" {
 			sendText(Hello)
 		}
 
 	case "text":
-		if strings.Contains("人工", postForm.Content) {
+		KefuMessage{
+			Message:  msg.Content,
+			To:       ToTypeMe,
+			UserId:   msg.FromUserName,
+			Platform: PlatformTypeMini,
+		}.storage()
+
+		if strings.Contains("人工", msg.Content) {
 			repTextMsg := TransStuff{
-				ToUserName:   postForm.FromUserName,
-				FromUserName: postForm.ToUserName,
+				ToUserName:   msg.FromUserName,
+				FromUserName: msg.ToUserName,
 				CreateTime:   time.Now().Unix(),
 				MsgType:      "transfer_customer_service",
 			}
 			c.JSON(200, repTextMsg)
 			sendText("已经转接人工客服，请耐心等待人工接入~")
 		} else {
-			m := checkNumMessage(postForm.Content, postForm.FromUserName)
+			m := checkNumMessage(msg.Content, msg.FromUserName)
 			if m != "" {
 				sendText(m)
 				return
 			}
 
-			ans := esLib.GetEsAns(EsClient, postForm.Content)
+			ans := esLib.GetEsAns(EsClient, msg.Content)
 			fmt.Println(ans)
 			if len(*ans) == 0 {
 				sendText(NoAnswer)
@@ -64,11 +78,11 @@ func Kefu(c *gin.Context) {
 
 			sendText(guess)
 
-			storageQuestion(ans, postForm.FromUserName)
+			storageQuestion(ans, msg.FromUserName)
 		}
 	}
 
-	b, err := json.Marshal(&postForm)
+	b, err := json.Marshal(&msg)
 	fmt.Println(string(b))
 
 }
