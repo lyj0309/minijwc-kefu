@@ -6,5 +6,11 @@ import (
 )
 
 func TestXml(t *testing.T) {
-	fmt.Println(string(toStaff("dsafasdf", "ssadfsadf")))
+	fmt.Println("dsafasdf", "ssadfsadf")
+}
+
+func TestCsv(t *testing.T) {
+}
+
+func TestEs(t *testing.T) {
 }
