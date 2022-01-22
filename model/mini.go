@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	esLib "github.com/lyj0309/jwc-lib/elastic"
 	"github.com/silenceper/wechat/v2/miniprogram/message"
 	"github.com/sirupsen/logrus"
 	"strings"
@@ -19,8 +20,8 @@ func Kefu(c *gin.Context) {
 		return
 	}
 
-	sendMsg := func(text string) {
-		m := message.NewCustomerTextMessage(postForm.FromUserName, "智能客服开发中，回复‘人工’即可接入人工客服")
+	sendText := func(text string) {
+		m := message.NewCustomerTextMessage(postForm.FromUserName, text)
 		err = Mini.GetCustomerMessage().Send(m)
 		if err != nil {
 			logrus.Error(err)
@@ -30,7 +31,7 @@ func Kefu(c *gin.Context) {
 	switch postForm.MsgType {
 	case "event":
 		if postForm.Event == "user_enter_tempsession" {
-			sendMsg("Hi~，欢迎咨询掌上教务处，智能客服小掌为您排忧解惑，请问有什么可以为您效劳呢?")
+			sendText(Hello)
 		}
 
 	case "text":
@@ -42,10 +43,29 @@ func Kefu(c *gin.Context) {
 				MsgType:      "transfer_customer_service",
 			}
 			c.JSON(200, repTextMsg)
-			return
-		}
+			sendText("已经转接人工客服，请耐心等待人工接入~")
+		} else {
+			m := checkNumMessage(postForm.Content, postForm.FromUserName)
+			if m != "" {
+				sendText(m)
+				return
+			}
 
-		sendMsg("智能客服开发中，回复‘人工’即可接入人工客服")
+			ans := esLib.GetEsAns(EsClient, postForm.Content)
+			fmt.Println(ans)
+			if len(*ans) == 0 {
+				sendText(NoAnswer)
+				return
+			}
+
+			sendText(`问题：` + (*ans)[0].Question + "\n\n回答：" + (*ans)[0].Answer)
+
+			guess := geneGuess(ans)
+
+			sendText(guess)
+
+			storageQuestion(ans, postForm.FromUserName)
+		}
 	}
 
 	b, err := json.Marshal(&postForm)
