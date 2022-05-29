@@ -48,4 +48,4 @@ jobs:
           app-name: 'jwc-kefu'
           slot-name: 'production'
           publish-profile: ${{ secrets.AzureAppService_PublishProfile_94854c6e76334bf8962dc0dec28e94fc }}
-          images: 'ghcr.io/${{ github.repository_owner }}/jwc-kefu:${{ github.sha }}'
+          images: 'ghcr.io/${{ github.repository_owner }}/jwc-kefu:latest'
