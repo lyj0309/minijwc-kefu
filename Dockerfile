@@ -21,8 +21,8 @@ RUN apk add gcompat
 WORKDIR /app
 COPY --from=builder /app/publish .
 ENV GIN_MODE=release \
-    PORT=8082
+    PORT=9000
 
 
-EXPOSE 8082
+EXPOSE 9000
 ENTRYPOINT ["./app"]
