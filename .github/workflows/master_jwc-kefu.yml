@@ -31,7 +31,9 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/jwc-kefu:latest
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/jwc-kefu:${{ github.sha }}
+            ghcr.io/${{ github.repository_owner }}/jwc-kefu:latest
 
   deploy:
     runs-on: ubuntu-latest
@@ -48,4 +50,4 @@ jobs:
           app-name: 'jwc-kefu'
           slot-name: 'production'
           publish-profile: ${{ secrets.AzureAppService_PublishProfile_94854c6e76334bf8962dc0dec28e94fc }}
-          images: 'ghcr.io/${{ github.repository_owner }}/jwc-kefu:latest'
+          images: 'ghcr.io/${{ github.repository_owner }}/jwc-kefu:${{ github.sha }}'
