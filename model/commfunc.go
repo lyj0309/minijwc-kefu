@@ -3,8 +3,6 @@ package model
 import (
 	"context"
 	"encoding/json"
-	"github.com/go-redis/redis/v8"
-	esLib "github.com/lyj0309/jwc-lib/elastic"
 	"github.com/sirupsen/logrus"
 	"strconv"
 	"strings"
@@ -42,7 +40,7 @@ func parseN(s string) string {
 	return strings.Replace(s, "\\n", "\n", -1)
 }
 
-func geneGuess(ans *[]esLib.QA) (guess string) {
+func geneGuess(ans *[]QA) (guess string) {
 
 	guess = "猜你想问：\n"
 	for i, qa := range *ans {
@@ -65,16 +63,17 @@ func checkNumMessage(msg string, id string) (res string) {
 		return
 	}
 
-	r, err := rdb.Get(ctx, id).Result()
-	if err == redis.Nil {
+	r, found := cache.Get(id)
+	if !found {
 		return "消息已经过期，请重新提问"
-	} else if err != nil {
+	}
+	if err != nil {
 		logrus.Error(err)
 		return
 	}
 
-	var qa []esLib.QA
-	err = json.Unmarshal([]byte(r), &qa)
+	var qa []QA
+	err = json.Unmarshal([]byte(r.(string)), &qa)
 	if err != nil {
 		return
 	}
@@ -87,11 +86,11 @@ func checkNumMessage(msg string, id string) (res string) {
 	return qa[num].Question + "\n\n" + qa[num].Answer
 }
 
-func storageQuestion(ans *[]esLib.QA, id string) {
+func storageQuestion(ans *[]QA, id string) {
 	*ans = (*ans)[1:]
 	b, err := json.Marshal(ans)
 	if err != nil {
 		return
 	}
-	rdb.Set(ctx, id, string(b), time.Minute*10)
+	cache.Set(id, string(b), time.Minute*10)
 }

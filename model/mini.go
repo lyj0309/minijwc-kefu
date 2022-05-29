@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	esLib "github.com/lyj0309/jwc-lib/elastic"
 	"github.com/silenceper/wechat/v2/miniprogram/message"
 	"github.com/sirupsen/logrus"
 	"strings"
@@ -65,7 +64,8 @@ func Kefu(c *gin.Context) {
 				return
 			}
 
-			ans := esLib.GetEsAns(EsClient, msg.Content)
+			ans := searchAlgolia(msg.Content)
+
 			fmt.Println(ans)
 			if len(*ans) == 0 {
 				sendText(NoAnswer)

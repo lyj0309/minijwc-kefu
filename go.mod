@@ -3,13 +3,16 @@ module minijwc-kefu
 go 1.17
 
 require (
+	github.com/algolia/algoliasearch-client-go/v3 v3.23.0
 	github.com/gin-gonic/gin v1.7.7
 	github.com/lyj0309/jwc-lib/db v0.0.0-20220118121619-b84fa50eecb9
 	github.com/lyj0309/jwc-lib/elastic v0.0.0-20220118121619-b84fa50eecb9
 	github.com/lyj0309/jwc-lib/wx v0.0.0-20220118121619-b84fa50eecb9
 	github.com/olivere/elastic/v7 v7.0.31
+	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/silenceper/wechat/v2 v2.1.0
 	github.com/sirupsen/logrus v1.8.1
+	gorm.io/gorm v1.22.5
 )
 
 require (
@@ -21,7 +24,6 @@ require (
 	github.com/go-playground/locales v0.13.0 // indirect
 	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/go-playground/validator/v10 v10.4.1 // indirect
-	github.com/go-redis/redis/v8 v8.11.4 // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/gomodule/redigo v1.8.5 // indirect
@@ -44,5 +46,4 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 	gorm.io/driver/mysql v1.2.3 // indirect
-	gorm.io/gorm v1.22.5 // indirect
 )

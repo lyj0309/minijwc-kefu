@@ -1,28 +1,25 @@
 package model
 
 import (
-	"github.com/go-redis/redis/v8"
 	dbLib "github.com/lyj0309/jwc-lib/db"
-	esLib "github.com/lyj0309/jwc-lib/elastic"
 	wxLib "github.com/lyj0309/jwc-lib/wx"
-	"github.com/olivere/elastic/v7"
+	cacheLib "github.com/patrickmn/go-cache"
 	"github.com/silenceper/wechat/v2/miniprogram"
 	"github.com/silenceper/wechat/v2/officialaccount"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+	"time"
 )
 
 var (
 	Mini     *miniprogram.MiniProgram
 	Official *officialaccount.OfficialAccount
-	EsClient *elastic.Client
-	rdb      *redis.Client
 	db       *gorm.DB
+	cache    *cacheLib.Cache
 )
 
 func init() {
-	EsClient = esLib.NewElastic()
-	rdb = dbLib.NewRedis()
+	cache = cacheLib.New(5*time.Minute, 10*time.Minute)
 	db = dbLib.NewDB()
 
 	//esLib.InsertCsv(EsClient)
