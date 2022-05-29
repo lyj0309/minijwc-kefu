@@ -3,7 +3,6 @@ package model
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	esLib "github.com/lyj0309/jwc-lib/elastic"
 	"github.com/silenceper/wechat/v2/officialaccount/message"
 	"github.com/sirupsen/logrus"
 	"strings"
@@ -53,7 +52,7 @@ func WxOfficial(c *gin.Context) {
 					return
 				}
 
-				ans := esLib.GetEsAns(EsClient, msg.Content)
+				ans := searchAlgolia(msg.Content)
 				for _, qa := range *ans {
 					fmt.Println(qa)
 				}
